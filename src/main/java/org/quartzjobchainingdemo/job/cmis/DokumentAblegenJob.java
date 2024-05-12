@@ -1,15 +1,14 @@
-package org.quartzjobchainingdemo.job;
+package org.quartzjobchainingdemo.job.cmis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartzjobchainingdemo.job.dto.Akte;
+import org.quartzjobchainingdemo.job.CmisAdapterResponse;
 import org.quartzjobchainingdemo.job.dto.Dokument;
-import org.quartzjobchainingdemo.job.dto.Vorgang;
-import org.quartzjobchainingdemo.service.AkteService;
-import org.quartzjobchainingdemo.service.DokumentService;
-import org.quartzjobchainingdemo.service.VorgangService;
+import org.quartzjobchainingdemo.service.cmis.AkteService;
+import org.quartzjobchainingdemo.service.cmis.DokumentService;
+import org.quartzjobchainingdemo.service.cmis.VorgangService;
 import org.springframework.http.ResponseEntity;
 
 @Slf4j
@@ -30,16 +29,7 @@ public class DokumentAblegenJob implements Job {
         log.info("Dokument ablegen job wird ausgeführt mit folgender Id");
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
         Dokument dokument = (Dokument) jobDataMap.get("dokument");
+        ResponseEntity<CmisAdapterResponse> result = dokumentService.dokumentAblegen(dokument);
 
-        boolean isVorgangGefunden = vorgangService.vorgangSuchen((Vorgang) jobDataMap.get("vorgang"));
-
-        ResponseEntity<CmisAdapterResponse> result;
-        if (isVorgangGefunden) {
-            result = dokumentService.dokumentAblegen(dokument);
-            log.info(dokument.getDokumentenId());
-            jobExecutionContext.setResult(result);  // wird im Listener benötigt
-        } else {
-            akteService.akteSuchen((Akte) jobDataMap.get("Akte"));
-        }
     }
 }

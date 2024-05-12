@@ -1,7 +1,7 @@
 package org.quartzjobchainingdemo.service;
 
 
-import org.quartzjobchainingdemo.job.DokumentAblegenJob;
+import org.quartzjobchainingdemo.job.cmis.DokumentAblegenJob;
 import org.quartzjobchainingdemo.job.dto.CmisAdapterJobWrapper;
 import org.quartzjobchainingdemo.job.dto.CommonDataModel;
 import org.quartzjobchainingdemo.job.dto.Dokument;

@@ -1,4 +1,4 @@
-package org.quartzjobchainingdemo.service;
+package org.quartzjobchainingdemo.service.cmis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.quartzjobchainingdemo.job.CmisAdapterResponse;
