@@ -5,9 +5,14 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
+import org.quartzjobchainingdemo.job.dto.CmisAdapterJobWrapper;
+import org.quartzjobchainingdemo.job.dto.CommonDataModel;
+import org.quartzjobchainingdemo.job.dto.Dokument;
 import org.quartzjobchainingdemo.service.JobService;
+import org.quartzjobchainingdemo.service.PrepareJobService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -26,15 +31,17 @@ public class InternalController {
         this.jobService = jobService;
     }
 
-    @GetMapping("/job")
-    public ResponseEntity<String> produceActiveMqMessage() {
+    @PostMapping("/ablegen")
+    public ResponseEntity<String> produceActiveMqMessage(@RequestBody CommonDataModel commonDataModel) {
 
-        try {
-            jobService.executeJob();
-        } catch (SchedulerException e) {
-            log.error("Something went wrong with the scheduler");
-            log.error(e.getMessage());
-            return ResponseEntity.badRequest().body("Madig");
+        for (Dokument dokument : commonDataModel.getDokumente()) {
+
+            CmisAdapterJobWrapper vorgangSuchenWrapper = PrepareJobService.prepareJobWrapper(commonDataModel, dokument);
+            try {
+                jobService.executeDokumentAblegen(vorgangSuchenWrapper);
+            } catch (SchedulerException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return ResponseEntity.ok("Erfolgreich");

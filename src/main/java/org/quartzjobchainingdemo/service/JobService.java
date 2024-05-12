@@ -2,15 +2,12 @@ package org.quartzjobchainingdemo.service;
 
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
-import org.quartz.JobListener;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.listeners.JobChainingJobListener;
-import org.quartzjobchainingdemo.job.EnterBuildingJob;
-import org.quartzjobchainingdemo.job.TurnOnPcJob;
-import org.quartzjobchainingdemo.job.dto.JobWrapper;
+import org.quartzjobchainingdemo.job.dto.CmisAdapterJobWrapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,36 +15,34 @@ public class JobService {
 
     private int runCount = 0;
     private final Scheduler scheduler;
-    JobChainingJobListener chainingJobListener = new JobChainingJobListener("asdf");
+    private final JobChainingJobListener jobChainingJobListener;
 
-    public JobService(Scheduler scheduler) {
+    public JobService(Scheduler scheduler, JobChainingJobListener jobChainingJobListener) {
         this.scheduler = scheduler;
+        this.jobChainingJobListener = jobChainingJobListener;
     }
 
-    public void executeJob() throws SchedulerException {
+    public void executeDokumentAblegen(CmisAdapterJobWrapper cmisAdapterJobWrapper) throws SchedulerException {
+        runCount++;
 
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("A cool trigger")
-                //.startNow()
+                .withIdentity("DokumentAblegenJobTrigger" + runCount)
+                .startNow()
                 .build();
 
-        runCount++;
-        JobDetail enteringJob = JobBuilder.newJob(EnterBuildingJob.class)
-                .withDescription("Hacker enters the building")
-                .withIdentity("Entering " + runCount)
-                .build();
 
-        JobDetail turningOnJob = JobBuilder.newJob(TurnOnPcJob.class)
-                .withDescription("Hacker turns PC on")
-                .withIdentity("Turning on " + runCount)
+        JobDetail dokumentAblegenDetail = buildDokumentAblegenDetail(cmisAdapterJobWrapper);
+
+        cmisAdapterJobWrapper.getData().forEach((k, v) -> dokumentAblegenDetail.getJobDataMap().put(k, v));
+
+        scheduler.scheduleJob(dokumentAblegenDetail, trigger);
+    }
+
+    private JobDetail buildDokumentAblegenDetail(CmisAdapterJobWrapper cmisAdapterJobWrapper) {
+        return JobBuilder.newJob(cmisAdapterJobWrapper.getJob())
+                .withDescription("Ablegen eines Dokumentes")
+                .withIdentity("DokumentAblegen " + runCount)
                 .storeDurably()
                 .build();
-
-        scheduler.scheduleJob(enteringJob, trigger);
-        scheduler.addJob(turningOnJob, true);
-
-        chainingJobListener.addJobChainLink(enteringJob.getKey(), turningOnJob.getKey());
-        scheduler.getListenerManager().addJobListener(chainingJobListener);
-        scheduler.start();
     }
 }

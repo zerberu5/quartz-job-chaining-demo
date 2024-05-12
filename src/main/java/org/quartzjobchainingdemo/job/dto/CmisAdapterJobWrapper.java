@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Builder
 @Data
-public class JobWrapper {
+public class CmisAdapterJobWrapper {
 
     private Class<? extends Job> job;
     private String identity;
