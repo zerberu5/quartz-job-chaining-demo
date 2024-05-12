@@ -15,13 +15,9 @@ import org.springframework.http.ResponseEntity;
 public class DokumentAblegenJob implements Job {
 
     private final DokumentService dokumentService;
-    private final VorgangService vorgangService;
-    private final AkteService akteService;
 
-    public DokumentAblegenJob(DokumentService dokumentService, VorgangService vorgangService, AkteService akteService) {
+    public DokumentAblegenJob(DokumentService dokumentService) {
         this.dokumentService = dokumentService;
-        this.vorgangService = vorgangService;
-        this.akteService = akteService;
     }
 
     @Override
